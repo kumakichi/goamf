@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute"
+    width="360" height="700">
+  <mx:Script>
+    <![CDATA[
+
+        import flash.net.Socket;
+
+        import TestClasses.EmptyDynamicClass;
+        import TestClasses.MixedDynamicClass;
+        import TestClasses.SealedClass;
+
+        var socket:flash.net.Socket
+
+        public function log(s:String) {
+            result_text.text += s + "\n"
+        }
+
+        public function start():void {
+            log("Connecting..")
+            socket = new flash.net.Socket();
+            expectingLength = true
+
+            socket.addEventListener(ProgressEvent.SOCKET_DATA, onData)
+            socket.addEventListener(Event.CONNECT, onConnect)
+            socket.connect("127.0.0.1", 8080)
+        }
+
+        public function writeThing(label:String, obj) {
+            socket.writeUTF(label)
+            socket.writeObject(obj)
+        }
+
+        public function onConnect(event:Event):void {
+
+            // Write a bunch of different objects, to test unpacking.
+            writeThing("String", "a string")
+            writeThing("True:", true)
+            writeThing("False:", false)
+            writeThing("Null:", null)
+            writeThing("Undefined:", undefined)
+            writeThing("Integer 0:", 0)
+            writeThing("Integer 1:", 1)
+            writeThing("Integer 1234:", 1234)
+            writeThing("Integer 123456789:", 123456789)
+            writeThing("Float 0.123:", 0.123)
+            writeThing("Array [1,2,3]:", [1, 2, 3])
+
+            var mixedArray2:Array = new Array(1,2,3)
+            mixedArray2["a"] = "apple"
+            mixedArray2["b"] = "banana"
+            writeThing("Mixed array [a: apple, b: banana]:", mixedArray2)
+
+            writeThing("Dictionary:", { firstName: "John", lastName: "Smith" })
+
+            writeThing("Empty dynamic object:", new TestClasses.EmptyDynamicClass())
+
+            var dynObj = new TestClasses.EmptyDynamicClass()
+            dynObj.x = "banana"
+            dynObj.y = new Array(1,2,3)
+            writeThing("Populated dynamic object:", dynObj)
+
+            writeThing("Dynamic class with static fields:", new TestClasses.MixedDynamicClass())
+
+            var dynObj2 = new TestClasses.MixedDynamicClass()
+            dynObj2.m = 1.2345
+            dynObj2.n = 12345678
+            writeThing("Dynamic class with dynamic and static fields:", dynObj2)
+
+            writeThing("Sealed class:", new TestClasses.SealedClass())
+
+            // Write some messages that will hopefully be sent as references.
+            writeThing("Array with the same object 3 times", new Array(dynObj, dynObj, dynObj))
+
+            var cactus:String = "cactus"
+            writeThing("Same string 3 times", new Array(cactus, cactus, cactus))
+
+            writeThing("Mixed strings and objects", new Array(cactus, dynObj, cactus, dynObj, cactus, dynObj))
+
+            // Send an empty label to tell tcp_listener that we're finished.
+            writeThing("", null)
+
+            socket.flush()
+
+            log("Sent test data")
+        }
+
+        // Fields for incoming data
+        var expectingLength:Boolean
+        var dataLength:int = 0
+
+        public function onData(event:ProgressEvent):void {
+            if (expectingLength) {
+                if (socket.bytesAvailable < 4) {
+                    return
+                }
+                dataLength = socket.readInt()
+                expectingLength = false
+                log("Expecting " + dataLength + " bytes")
+            }
+
+            if (socket.bytesAvailable < dataLength) {
+                log("Not enough bytes, " + socket.bytesAvailable + " available")
+                return
+            }
+            log("Proceeding, there are " + socket.bytesAvailable + " available")
+
+            while (true) {
+                var label = socket.readUTF()
+                if (label == "") {
+                    log("Found empty label")
+                    break
+                }
+
+                var obj = socket.readObject()
+                var objStr = "";
+                if (obj == null)
+                    objStr = "null"
+                else
+                    objStr = obj.toString()
+
+                log(label + " " + objStr)
+            }
+
+            socket.close()
+            socket = null
+        }
+    ]]>
+
+</mx:Script>
+<mx:Button x="250" y="10" label="start" click="start();"/>
+<mx:TextArea x="10" y="36" width="319" height="600" id="result_text"/>
+<mx:Label x="10" y="10" text="Result:"/>
+</mx:Application>
