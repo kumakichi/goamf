@@ -1,14 +1,13 @@
 package main
 
 import (
-	"net/http"
-
-	"github.com/kumakichi/goamf"
-
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
+
+	"github.com/kumakichi/goamf"
 )
 
 const (

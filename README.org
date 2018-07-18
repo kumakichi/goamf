@@ -1,8 +1,10 @@
 * About
 
+  [[https://godoc.org/github.com/kumakichi/goamf][https://godoc.org/github.com/kumakichi/goamf?status.png]]
+
   This repository is based on [[https://github.com/paulhodge/amf.go][amf.go]] written by [[https://github.com/paulhodge][paulhodge]], and I add and modify codes according to [[https://pypi.org/project/PyAMF/][PyAMF]].
 
-  AMF3 only.
+  Currently, support AMF3 only.
 
 * Example
   #+BEGIN_SRC go

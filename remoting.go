@@ -188,6 +188,7 @@ func DecodeMessageBundle(stream io.Reader) (*MessageBundle, error) {
 	return &result, nil
 }
 
+// Encode message for http request
 func EncodeMessageBundle(cxt *Encoder, bundle *MessageBundle) error {
 	cxt.WriteUint16(bundle.AmfVersion)
 
