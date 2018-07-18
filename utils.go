@@ -22,10 +22,10 @@ import (
 // A mutiple request:
 //
 //   args := []interface{}{
-//		[]interface{}{"getHourlyDataForAllSites", "GisCommonDataUtil"},
-//		[]interface{}{"getHourlyCurveDataForAllSites", "GisCommonDataUtil"},
+//		[]interface{}{"getAreaDayReprotData", "GisCommonDataUtil"},
+//		[]interface{}{"getAreaRealTimeReportData", "GisCommonDataUtil"},
 //	 }
-//   amf.NewRequest(args)
+//   NewRequest(args)
 func NewRequest(args ...interface{}) (reader io.Reader, header http.Header, err error) {
 	var msg AmfMessage
 	var msgs []AmfMessage
@@ -183,27 +183,39 @@ func getOptArgString(v interface{}) (str string, err error) {
 	return
 }
 
-// Parse response to []map[string]string
+// Parse response to [][]map[string]string for body which is an 1-level objects array
+//
+// 1-level objects array means, each object in the array has no *object* type element[s],
+// all elements of this object should be plain type like Integer, String, Number, Null, Date ...
 //
 // If response body is not array of 1-level objects, you may need to parse it manually
-func ParseRespBody(b []byte) (body []map[string]string, err error) {
+func ParseRespBody(b []byte) (body [][]map[string]string, err error) {
+	var bodyElement []map[string]string
+
 	data := bytes.NewBuffer(b)
 	bundle, _ := DecodeMessageBundle(data)
 
-	if obj, ok := bundle.Messages[0].Body.(AvmObject); !ok {
-		err = errors.New("convert to AvmObject")
-	} else {
-		if elements, ok := obj.StaticFields["body"].([]interface{}); !ok {
-			err = errors.New("convert body field to array")
+	for i := 0; i < len(bundle.Messages); i++ {
+		if obj, ok := bundle.Messages[i].Body.(AvmObject); !ok {
+			err = errors.New(fmt.Sprintf("convert body to AvmObject: %d", i))
 		} else {
-			for _, e := range elements {
-				m, err := parseElement(e)
-				if err != nil {
-					fmt.Printf("parseElement:%s\n", err.Error())
-				} else {
-					body = append(body, m)
+			if elements, ok := obj.StaticFields["body"].([]interface{}); !ok {
+				err = errors.New(fmt.Sprintf("convert body field to array: %d", i))
+			} else {
+				for _, e := range elements {
+					m, err := parseElement(e)
+					if err != nil {
+						fmt.Printf("parseElement:%s\n", err.Error())
+					} else {
+						bodyElement = append(bodyElement, m)
+					}
 				}
 			}
+
+			if err != nil {
+				return
+			}
+			body = append(body, bodyElement)
 		}
 	}
 
