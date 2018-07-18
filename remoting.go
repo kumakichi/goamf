@@ -142,6 +142,7 @@ func DecodeMessageBundle(stream io.Reader) (*MessageBundle, error) {
 
 	for i := 0; i < int(messageCount); i++ {
 		// TODO: Should reset object tables here
+		cxt.Clear()
 
 		message := &result.Messages[i]
 

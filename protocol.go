@@ -163,6 +163,17 @@ func (cxt *Decoder) ReadUint16() uint16 {
 	cxt.saveError(err)
 	return value
 }
+
+func (cxt *Decoder) Clear() {
+	cxt.IsAMF3 = false
+	cxt.stringTable = []string{}
+	cxt.classTable = []*AvmClass{}
+	cxt.objectTable = []interface{}{}
+	cxt.decodeError = nil
+	cxt.typeMap = make(map[string]reflect.Type)
+	return
+}
+
 func (cxt *Decoder) ReadUint32() uint32 {
 	var value uint32
 	err := binary.Read(cxt.stream, binary.BigEndian, &value)
