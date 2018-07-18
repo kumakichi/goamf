@@ -15,14 +15,22 @@ const (
 )
 
 func main() {
-	reader, header, err := amf.NewRequest("getAreaRealTimeReportData", "GisCommonDataUtil")
+	//You can send mutiple requests per time, like this:
+	//
+	//reader, header, err := amf.NewRequest([]interface{}{
+	//	[]interface{}{"getAreaDayReprotData", "GisCommonDataUtil"},
+	//	[]interface{}{"getAreaRealTimeReportData", "GisCommonDataUtil"},
+	//})
+
+	//Single request
+	reader, header, err := amf.NewRequest("getAreaDayReprotData", "GisCommonDataUtil")
 	checkError(err)
 
 	b := requestWithHeader(reader, header)
 
 	body, err := amf.ParseRespBody(b)
 	checkError(err)
-	fmt.Printf("Body size: %d\n", len(body))
+	fmt.Printf("Body size: %d,%v\n", len(body), body)
 }
 
 func checkError(err error) {
