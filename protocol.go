@@ -306,7 +306,9 @@ func (cxt *Decoder) readDateAmf3() uint32 {
 
 	ms := cxt.ReadFloat64()
 	// TODO: timezone_offset
-	return uint32(ms / 1000.0)
+	result := uint32(ms / 1000.0)
+	cxt.storeObjectInTable(result)
+	return result
 }
 
 func (cxt *Decoder) readStringAmf3() string {
@@ -630,6 +632,7 @@ func (cxt *Decoder) readArrayAmf3() interface{} {
 	// No name-value pairs, return a flat Go array.
 	if key == "" {
 		result := make([]interface{}, elementCount)
+		cxt.storeObjectInTable(result)
 		for i := 0; i < elementCount; i++ {
 			result[i] = cxt.ReadValueAmf3()
 		}
