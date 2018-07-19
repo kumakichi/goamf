@@ -193,7 +193,10 @@ func ParseRespBody(b []byte) (body [][]map[string]string, err error) {
 	var bodyElement []map[string]string
 
 	data := bytes.NewBuffer(b)
-	bundle, _ := DecodeMessageBundle(data)
+	bundle, err := DecodeMessageBundle(data)
+	if err != nil {
+		return
+	}
 
 	for i := 0; i < len(bundle.Messages); i++ {
 		if obj, ok := bundle.Messages[i].Body.(AvmObject); !ok {
