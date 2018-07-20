@@ -190,8 +190,6 @@ func getOptArgString(v interface{}) (str string, err error) {
 //
 // If response body is not array of 1-level objects, you may need to parse it manually
 func ParseRespBody(b []byte) (body [][]map[string]string, err error) {
-	var bodyElement []map[string]string
-
 	data := bytes.NewBuffer(b)
 	bundle, err := DecodeMessageBundle(data)
 	if err != nil {
@@ -199,6 +197,8 @@ func ParseRespBody(b []byte) (body [][]map[string]string, err error) {
 	}
 
 	for i := 0; i < len(bundle.Messages); i++ {
+		var bodyElement []map[string]string
+
 		if obj, ok := bundle.Messages[i].Body.(AvmObject); !ok {
 			err = errors.New(fmt.Sprintf("convert body to AvmObject: %d", i))
 		} else {
