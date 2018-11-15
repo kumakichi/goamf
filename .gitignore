@@ -6,3 +6,6 @@
 /_obj
 /_test
 /_testmain.go
+*~
+\.*
+go.sum
